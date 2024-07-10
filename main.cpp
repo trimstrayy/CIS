@@ -105,13 +105,33 @@ void sun_time(QJsonDocument jsonDoc)
     QJsonObject sun = jsonObj["sys"].toObject();
     qDebug() << sun;
 
-    int sunrise = sun["sunrise"].toInteger();
-    qDebug() << "Sunrise in UNIX Code: " << sunrise << "\n";
+    int sunrise_unix = sun["sunrise"].toInteger();
+    qDebug() << "Sunrise in UNIX Code: " << sunrise_unix << "\n";
 
-    int sunset = sun["sunset"].toInteger();
-    qDebug() << "Sunset in UNIX Code: " << sunset << "\n";
+    int sunset_unix = sun["sunset"].toInteger();
+    qDebug() << "Sunset in UNIX Code: " << sunset_unix << "\n";
 
     //Converting UNIX Code to real time/date
+    QDateTime sunrise = QDateTime::fromSecsSinceEpoch(sunrise_unix);
+    QDateTime sunset = QDateTime::fromSecsSinceEpoch(sunset_unix);
+
+    //Seting the time zone
+    QString time_zone_country = sun["country"].toString();      // Fetching the Country Code from sys
+
+    int TimeZone_unix = jsonObj["timezone"].toInteger();        // Fetching timezone from current weather data
+
+    // Set the time zone
+    QTimeZone timeZone(TimeZone_unix);
+
+    sunrise.setTimeZone(timeZone);
+    sunset.setTimeZone(timeZone);
+
+    // Format and Displaying the real time
+    QString sunriseString = sunrise.toString("yyyy-MM-dd HH:mm:ss");
+    QString sunsetString = sunset.toString("yyyy-MM-dd HH:mm:ss");
+
+    qDebug() << "Sunrise (" << time_zone_country << ") :" << sunriseString;
+    qDebug() << "Sunset (" << time_zone_country << ") :" << sunsetString;
 }
 
 
