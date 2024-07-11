@@ -1,3 +1,5 @@
+#include "mainwindow.h"
+#include <QApplication>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QJsonDocument>
@@ -10,6 +12,7 @@
 #include <QTimeZone>
 
 
+void forecast_date(QJsonDocument);
 QByteArray response(char []);           // Function to Call API
 void sun_time(QJsonDocument);           // Function to Extract Sunrise and SunSet From Current Weather API
 void temperature(QJsonDocument);        // Function to Extract Temperature From Current Weather API
@@ -29,10 +32,13 @@ size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp)
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
+    QApplication a(argc, argv);
+
     // Initialize libcurl
 
-    char url[150] = "http://api.openweathermap.org/geo/1.0/direct?q=Kathmandu&limit=5&appid=";
+    QString API_KEY = "c75997502cfcd1b939260acf6e491ec4";
+
+    char url[150] = "http://api.openweathermap.org/geo/1.0/direct?q=Kathmandu&limit=5&appid=c75997502cfcd1b939260acf6e491ec4";
 
     QByteArray responseData = response(url);            //Fetching the Data
 
@@ -59,7 +65,9 @@ int main(int argc, char *argv[])
     QString latitude = lat(jsonDoc);
     QString longitude = lon(jsonDoc);
 
-    // Current Weather
+
+    // ------------------------------------------------------------------------------
+    // Current Weather API CALL
     std::string string_weather_url = "https://api.openweathermap.org/data/2.5/weather?lat="+latitude.toStdString()+"&lon="+longitude.toStdString()+"&appid=c75997502cfcd1b939260acf6e491ec4";
     char char_weather_url[150];
 
@@ -85,18 +93,62 @@ int main(int argc, char *argv[])
     temperature(jsonDoc1);
     sun_time(jsonDoc1);
 
+
+    // ------------------------------------------------------------------------------------------------
+    // Call 5 day / 3 hour forecast data
+    std::string string_forecast_5Days_3hr_url = "api.openweathermap.org/data/2.5/forecast?lat="+latitude.toStdString()+"&lon="+longitude.toStdString()+"&appid=c75997502cfcd1b939260acf6e491ec4";
+     char char_forecast_5Days_3hr_url[150];
+
+    // Converting std::string to char type
+    strcpy(char_forecast_5Days_3hr_url, string_forecast_5Days_3hr_url.c_str());
+
+    // Function Call
+    QByteArray forecast_response_data = response(char_forecast_5Days_3hr_url);
+
+    // Triming any leading/trailing whitespace
+    forecast_response_data = forecast_response_data.trimmed();
+
+    // Parsing the JSON Data
+    QJsonDocument forecast_jsonDoc = QJsonDocument::fromJson(forecast_response_data, &error);
+
+    // Error Testing
+    if (error.error != QJsonParseError::NoError){
+        qWarning() << "Error parsing JSON:" << error.errorString();
+        return -1;
+    }
+
+    //Function Call
+    forecast_date(forecast_jsonDoc);
+
+    // Displaying Widget
+    MainWindow w;
+    w.show();
+
     return a.exec();
+}
+
+
+void forecast_date(QJsonDocument jsonDoc)           //Call 5 day / 3 hour forecast data
+{
+    if(!jsonDoc.isObject()) {
+        qDebug() << "JSON is not an object.";
+    }
+
+    qDebug() << "\n";
+    QJsonObject jsonObj = jsonDoc.object();
+
+    QJsonArray forecast = jsonObj["list"].toArray();
+
+    for(int i = 0; i < 40; i++)
+    {
+        qDebug() << "Day" << (i*3/24+1);
+        qDebug() << forecast[i] << "\n";
+    }
 }
 
 
 void sun_time(QJsonDocument jsonDoc)
 {
-    QJsonParseError jsonError;
-    if (jsonError.error != QJsonParseError::NoError) {
-        qDebug() << "Error parsing Json:" << jsonError.errorString();
-        return;
-    }
-
     if(!jsonDoc.isObject()) {
         qDebug() << "JSON is not an object.";
     }
@@ -138,12 +190,6 @@ void sun_time(QJsonDocument jsonDoc)
 void temperature(QJsonDocument jsonDoc) //get's temperature info
 {
     // Checking for Error
-    QJsonParseError jsonError;
-    if (jsonError.error != QJsonParseError::NoError) {
-        qDebug() << "Error parsing JSON:" << jsonError.errorString();
-        return;
-    }
-
     if (!jsonDoc.isObject()) {
         qDebug() << "JSON is not an object.";
         return;
@@ -160,12 +206,6 @@ void temperature(QJsonDocument jsonDoc) //get's temperature info
 
 void weather(QJsonDocument jsonDoc) // get's weather info
 {
-    QJsonParseError jsonError;
-    if (jsonError.error != QJsonParseError::NoError) {
-        qDebug() << "Error parsing JSON:" << jsonError.errorString();
-        return;
-    }
-
     if (!jsonDoc.isObject()) {
         qDebug() << "JSON is not an object.";
         return;
