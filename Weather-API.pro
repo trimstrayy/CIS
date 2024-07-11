@@ -2,6 +2,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+TARGET = searchbar
 CONFIG += c++17
 
 # You can make your code fail to compile if it uses deprecated APIs.
@@ -10,10 +11,12 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    searchbar.cpp
 
 HEADERS += \
-    mainwindow.h
+    mainwindow.h \
+    searchbar.h
 
 FORMS += \
     mainwindow.ui
@@ -26,3 +29,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 # Add the following lines for libcurl
 INCLUDEPATH += C:/Coding/curl/include
 LIBS += -LC:/Coding/curl/lib -lcurl
+
+# Installation targets
+INSTALLS += target
+target.path = $$[QT_INSTALL_EXAMPLES]/searchbar
