@@ -1,29 +1,16 @@
 #include "mainwindow.h"
-#include <QVBoxLayout>
-#include <QWidget>
-#include "searchbar.h"
+#include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), searchBar(new SearchBar(this))
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
 {
-
-    QWidget *centralWidget = new QWidget(this);    //-------------CENTRAL WIDGET---------
-
-
-    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
-
-
-    mainLayout->addWidget(searchBar);  //-----ADD SEARCH BAR TO TOP----
-
-
-
-    mainLayout->addStretch();                //TO PUSH CONTENT TO TOP
-
-
-    centralWidget->setLayout(mainLayout);
-    setCentralWidget(centralWidget);
+    ui->setupUi(this);
+    ui->quickWidget->setSource(QUrl(QStringLiteral("qrc:/map_location.qml")));
+    ui->quickWidget->show();
 }
 
 MainWindow::~MainWindow()
 {
+    delete ui;
 }
